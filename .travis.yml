@@ -1,0 +1,24 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    # Dockerfile.dev wird hier genutzt, um Tests ausführen zu können. Der Prod-Build kann das nicht.
+    - docker build -t jwsenselabs/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run jwsenselabs/react-test npm test -- --coverage
+    # Hier könnten natürlich auch noch die Tests der anderen Container ausgeführt werden, hier aktuell aber nicht vorhanden (z.B. server...)
+
+after_success:
+    - docker build -t jwsenselabs/multi-client ./client
+    - docker build -t jwsenselabs/multi-nginx ./nginx
+    - docker build -t jwsenselabs/multi-server ./server
+    - docker build -t jwsenselabs/multi-worker ./worker
+    # Log in to the docker CLI in one single command
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    # Take those images and push them to docker hub
+    - docker push jwsenselabs/multi-client
+    - docker push jwsenselabs/multi-nginx
+    - docker push jwsenselabs/multi-server
+    - docker push jwsenselabs/multi-worker
