@@ -1,0 +1,42 @@
+// wird von aws genutzt, um docker container in aws ecs (elastic container service) zu betreiben
+// siehe: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html
+// ähnlich zu docker-compose, bloß halt aws spezifisch
+// umgebungsvariablen, um den server mit den dbs zu verbinden, werden direkt in aws gesetzt
+{
+    "AWSEBDockerrunVersion": 1,
+    "containerDefinitions": [
+        {
+            "name": "client",
+            // zieht image aus öffentlichem docker-hub repo
+            "image": "jwsenselabs/multi-client",
+            "hostname": "client",
+            // wenn ein "essential" container crashed, werden auch alle anderen container runtergefahren
+            "essential": false
+        },
+        {
+            "name": "server",
+            "image": "jwsenselabs/multi-server",
+            "hostname": "api",
+            "essential": false
+        },
+        {
+            "name": "worker",
+            "image": "jwsenselabs/multi-worker",
+            "hostname": "worker",
+            "essential": false
+        },
+        {
+            "name": "nginx",
+            "image": "jwsenselabs/multi-nginx",
+            "hostname": "nginx",
+            "essential": true,
+            "portMappings": [
+                {
+                    "hostPort": 80,
+                    "containerPort": 80
+                }
+            ],
+            "links": ["client", "server"]
+        }
+    ]
+}

@@ -8,7 +8,7 @@ before_install:
 
 script:
     - docker run jwsenselabs/react-test npm test -- --coverage
-    # Hier könnten natürlich auch noch die Tests der anderen Container ausgeführt werden, hier aktuell aber nicht vorhanden (z.B. server...)
+    # Hier könnten natürlich auch noch die Tests der anderen Subprojekte ausgeführt werden, hier aktuell aber nicht vorhanden (z.B. server...)
 
 after_success:
     - docker build -t jwsenselabs/multi-client ./client
@@ -22,3 +22,16 @@ after_success:
     - docker push jwsenselabs/multi-nginx
     - docker push jwsenselabs/multi-server
     - docker push jwsenselabs/multi-worker
+
+deploy:
+    edge: true
+    provider: elasticbeanstalk
+    region: eu-central-1
+    app: complex-docker
+    env: ComplexDocker-env
+    bucket_name: elasticbeanstalk-eu-central-1-292704706716
+    bucket_path: docker-multi
+    on:
+        branch: master
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
